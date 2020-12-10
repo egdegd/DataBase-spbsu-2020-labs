@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Root>
+	<Table Name="CUSTOM_COMMANDS">
+	</Table>
+	<Table Name="Course">
+		<Command Name="GetAllCourses">
+			select course_name from course
+			order by cast(course_name as varchar(50))
+		</Command>
+	</Table>
+	<Table Name="Student">
+		<Command Name="GetAllStudents">
+			select last_name, first_name from Student
+		</Command>
+	</Table>
+	<Table Name="Student_grade">
+		<Command Name="StudentsGrade">
+			select last_name, first_name, grade from Student_grade
+			join Course on Course.course_id = Student_grade.course_id
+			join Student on Student.student_id = Student_grade.student_id
+			where cast(course_name as varchar(50)) = @courseName
+		</Command>
+		<Command Name="StudentGrade">
+			select grade from Student_grade
+			join Course on Course.course_id = Student_grade.course_id
+			join Student on Student.student_id = Student_grade.student_id
+			where cast(course_name as varchar(50)) = @courseName and cast(last_name as varchar(50)) = @lastName
+		</Command>
+		<Command Name="AddGrade">
+			insert into Student_grade (student_id, course_id, grade)
+			values (
+				(select student_id from Student where cast(last_name as varchar(50)) = @lastName),
+				(select course_id from Course where cast(course_name as varchar(50)) = @courseName),
+				@grade
+			)
+		</Command>
+	</Table>
+</Root>
