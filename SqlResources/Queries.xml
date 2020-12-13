@@ -27,12 +27,30 @@
 			where cast(course_name as varchar(50)) = @courseName and cast(last_name as varchar(50)) = @lastName
 		</Command>
 		<Command Name="AddGrade">
-			insert into Student_grade (student_id, course_id, grade)
-			values (
-				(select student_id from Student where cast(last_name as varchar(50)) = @lastName),
-				(select course_id from Course where cast(course_name as varchar(50)) = @courseName),
-				@grade
+			if not exists
+			(
+				select 1 from Student_grade
+				join Course on Course.course_id = Student_grade.course_id
+				join Student on Student.student_id = Student_grade.student_id
+				where cast(last_name as varchar(50)) = @lastName and cast(course_name as varchar(50)) = @courseName
 			)
+			begin
+				insert into Student_grade (student_id, course_id, grade)
+				values (
+					(select student_id from Student where cast(last_name as varchar(50)) = @lastName),
+					(select course_id from Course where cast(course_name as varchar(50)) = @courseName),
+					@grade
+				)
+			end
+			else
+			begin
+				update Student_grade
+				set grade = @grade
+				where
+					student_id = (select student_id from Student where cast(last_name as varchar(50)) = @lastName)
+				and
+					course_id = (select course_id from Course where cast(course_name as varchar(50)) = @courseName)
+			end
 		</Command>
 	</Table>
 </Root>
